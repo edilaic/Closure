@@ -1,8 +1,13 @@
-for i in {All closing accounts}; do closeautomapentry $i; closeamdmapentry $i; closeexportsentry $i; done
+#!/bin/bash
 
-for i in {Instructional closing accounts}; do closegroupentry $i; closenetgroupentry $i; done
+inst="iristestofalonglogin"
+full="iristest"
+all="$full $inst"
 
-for i in {Instructional closing accounts}; do co -l passwd.closed; ypmatch $i passwd >> passwd.closed; ci -u -m"closing $i ($USER)" passwd.closed; done
+for i in $all; do closeautomapentry $i; closeamdmapentry $i; closeexportsentry $i; done
 
-for i in {Non-instructional closing accounts}; do passwd -r nis -e $i; sleep 3; done
+for i in $inst; do closegroupentry $i; closenetgroupentry $i; done
 
+for i in $inst; do co -l passwd.closed; ypmatch $i passwd >> passwd.closed; ci -u -m"closing $i ($USER)" passwd.closed; done
+
+for i in $full; do echo "changing shell for $i"; echo "/usr/sww/share/etc/expired" | passwd -r nis -e $i; sleep 3; done
