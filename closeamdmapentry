@@ -1,0 +1,31 @@
+#! /bin/bash
+
+user=$1
+file=amdmaps/amd.home.eecs
+SED=/usr/sww/bin/sed
+GREP=/usr/sww/bin/grep
+EXTRACHANGES=0
+
+$GREP "^$user\b" $file || exit
+
+co -l $file
+cp $file $file.backup
+$SED -i "/^$user\b/d" $file
+/usr/local/bin/rcsdiff $file
+if [ ! $(/usr/local/bin/rcsdiff -q $file | wc -l) -eq 2 ]
+then
+        EXTRACHANGES=1
+fi
+
+if [ $EXTRACHANGES -gt 0 ]
+then
+echo "Desired changes made?(y/N)"
+read yn
+case $yn in
+        Y ) break;;
+        y ) break;;
+        * ) mv $file.backup $file; ci -u $file; exit;;
+esac
+fi
+ci -u -m"Closing $user. ($USER)" $file 
+rm $file.backup

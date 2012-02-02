@@ -1,0 +1,37 @@
+#! /bin/bash
+
+user=$1
+file=group
+SED=/usr/sww/bin/sed
+EXTRACHANGES=0
+
+grep $user $file || exit
+
+co -l $file
+cp $file $file.backup
+$SED -i "s/:$user,/:/" $file
+$SED -i "s/,$user,/,/" $file
+$SED -i "s/:$user$/:/" $file
+$SED -i "s/,$user$//" $file
+$SED -i 's/,,/,/' $file
+$SED -i 's/:,/:/' $file
+$SED -i 's/,*$//' $file
+rcsdiff $file
+if [ ! $(/usr/local/bin/rcsdiff -q $file | wc -l) -eq 2 ]
+then
+        EXTRACHANGES=1
+fi
+
+if [ $EXTRACHANGES -gt 0 ]
+then
+echo "Desired changes made?(y/N)"
+read yn
+case $yn in
+        Y ) break;;
+        y ) break;;
+        * ) mv group.backup group; ci -u group; exit;;
+esac
+fi
+ci -u -m"Closing $user. ($USER)" $file 
+rm $file.backup
+

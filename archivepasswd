@@ -1,0 +1,16 @@
+#! /bin/sh
+
+co -l passwd.closed
+cp passwd.closed passwd.closed.backup
+ypmatch $1 passwd >> passwd.closed
+rcsdiff passwd.closed 
+echo "Desired changes made?(y/N)"
+read yn
+case $yn in
+        Y ) break;;
+        y ) break;;
+        * ) mv passwd.closed.backup passwd.closed; ci -u passwd.closed; exit;;
+esac
+ci -u -m"Closed login ($USER)" passwd.closed
+rm passwd.closed.backup
+

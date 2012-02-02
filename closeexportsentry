@@ -1,0 +1,31 @@
+#! /bin/bash
+
+user=$1
+file=exports
+SED=/usr/sww/bin/sed
+EXTRACHANGES=0
+
+grep $user $file || exit
+
+co -l $file
+cp $file $file.backup
+$SED -i "/^\/eecs\/$user\s/d" $file
+rcsdiff $file
+if [ ! $(/usr/local/bin/rcsdiff -q $file | wc -l) -eq 2 ]
+then
+        EXTRACHANGES=1
+fi
+
+if [ $EXTRACHANGES -gt 0 ]
+then
+echo "Desired changes made?(y/N)"
+read yn
+case $yn in
+        Y ) break;;
+        y ) break;;
+        * ) mv $file.backup $file; ci -u $file; exit;;
+esac
+fi
+ci -u -m"Closing $user. ($USER)" $file 
+rm $file.backup
+
