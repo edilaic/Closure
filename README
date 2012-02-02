@@ -1,0 +1,8 @@
+for i in {All closing accounts}; do closeautomapentry $i; closeamdmapentry $i; closeexportsentry $i; done
+
+for i in {Instructional closing accounts}; do closegroupentry $i; closenetgroupentry $i; done
+
+for i in {Instructional closing accounts}; do co -l passwd.closed; ypmatch $i passwd >> passwd.closed; ci -u -m"closing $i ($USER)" passwd.closed; done
+
+for i in {Non-instructional closing accounts}; do passwd -r nis -e $i; sleep 3; done
+
