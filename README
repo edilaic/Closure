@@ -10,4 +10,6 @@ for i in $inst; do closegroupentry $i; closenetgroupentry $i; done
 
 for i in $inst; do co -l passwd.closed; ypmatch $i passwd >> passwd.closed; ci -u -m"closing $i ($USER)" passwd.closed; done
 
+for i in $inst; do /usr/sww/bin/sed -i "/^$i:/d" passwd; done
+
 for i in $full; do echo "changing shell for $i"; echo "/usr/sww/share/etc/expired" | passwd -r nis -e $i; sleep 3; done
