@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-from os import chdir
+from os import chdir, getlogin
 from logging import error
+from shutil import copyfile
 from subprocess import call
 
 inst = ["iristestofalonglogin"]
@@ -9,49 +10,73 @@ full = ["iristest"]
 all = full + inst
 
 WORKDIR = "test/work/var/yp/src"
+#SED = "/usr/sww/bin/sed"
+SED = "/bin/sed"
+#RCSDIFF = "/usr/local/bin/rcsdiff"
+RCSDIFF = "/usr/bin/rcsdiff"
 
+def sed(exp, target):
+    call([SED, "-i", exp, target])
+    return
 
-
-def closeamdmapentry(i):
+def rcsdiff(target):
     pass
 
-def closeautomapentry(i):
+def confirmchanges(target):
     pass
 
-def closeexportsentry(i):
+def closeamdmapentry(user, target):
+    target = "amdmaps/amd.home.eecs"
+    copyfile(target, target + ".backup")
+    sed("/^" + user + "\b/d", target)
+    rcsdiff(target)
+    confirmchanges(target)
+    return
+
+def closeautomapentry(user):
+    
+    pass
+
+def closeexportsentry(user):
     pass
     
-def closegroupentry(i):
+def closegroupentry(user):
     pass
 
-def closenetgroupentry(i):
+def closenetgroupentry(user):
     pass
 
 def checkout(files, user):
-    chdir(WORKDIR)
     try:
         for i in files:
             program = ['co', '-l', i]
             if call(program):
                 raise Exception(program)
     except Exception as ex:
-        error('Exception in %s while closing account %s.' % (ex, user))
+        error('Exception in %s with file %s while closing account %s.' % (ex, i, user))
         raise ex
     
 def checkin(files, user):
-    call('ci -u thingy')
+    try:
+        for i in files:
+            program = ['ci', '-u', '-m"Closing ' + user + '. (' + getlogin() +')"', i]
+            if call(program):
+                raise Exception(program)
+    except Exception as ex:
+        error('Exception in %s with file %s while closing account %s.' % (ex, i, user))
+        raise ex
     
 files = ["automaps/auto.home.eecs", "amdmaps/amd.home.eecs",
          "exports", "group", "netgroup"]
-user = full[0]
-checkout(files, user)
+chdir(WORKDIR)
 for i in all:
+    checkout(files, i)
     closeautomapentry(i)
     closeamdmapentry(i)
     closeexportsentry(i)
     closegroupentry(i)
     closenetgroupentry(i)
-checkin()
+    checkin(files, i)
 
 # for i in $all; do  $i;  $i;  $i; done
 
